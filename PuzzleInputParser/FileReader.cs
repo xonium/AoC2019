@@ -6,10 +6,10 @@ namespace PuzzleInputParser
 {
     public static class FileReader
     {
-        public static List<int> GetValues(string fileName)
+        public static List<int> GetValues(string fileName, string separator)
         {
             var allText = File.ReadAllText(fileName);
-            return allText.Split("\r\n").Select(x => int.Parse(x.Trim())).ToList();
+            return allText.Split(separator).Select(x => int.Parse(x.Trim())).ToList();
         }
     }
 }

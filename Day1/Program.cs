@@ -9,7 +9,7 @@ namespace AdventOfCode2019
     {
         static void Main(string[] args)
         {
-            var masses = FileReader.GetValues("./input_part1.txt");
+            var masses = FileReader.GetValues("./input_part1.txt", "\r\n");
             var totalFuel = new List<int>();
 
             foreach(var mass in masses)
