@@ -34,16 +34,23 @@ namespace Day3
             }
 
             var minimumLength = int.MaxValue;
+            var minimumWireLength = int.MaxValue;
             // wire 0
-            foreach (var position in generatedWires[0])
+            for (int i = 0; i < generatedWires[0].Count; i++)
             {
-                var p = generatedWires[1].Find(x => x.Equals(position));
-                if (p != null)
+                var p = generatedWires[1].FindIndex(x => x.Equals(generatedWires[0][i]));
+                if (p != -1)
                 {
-                    if ((Math.Abs(position.X) + Math.Abs(position.Y)) < minimumLength)
+                    if ((Math.Abs(generatedWires[1][p].X) + Math.Abs(generatedWires[1][p].Y)) < minimumLength)
                     {
-                        minimumLength = Math.Abs(position.X) + Math.Abs(position.Y);
-                        Console.WriteLine(Math.Abs(position.X) + Math.Abs(position.Y));
+                        minimumLength = Math.Abs(generatedWires[1][p].X) + Math.Abs(generatedWires[1][p].Y);
+                        Console.WriteLine(Math.Abs(generatedWires[1][p].X) + Math.Abs(generatedWires[1][p].Y));
+                    }
+
+                    if((p + i + 2) < minimumWireLength)
+                    {
+                        minimumWireLength = p + i + 2;
+                        Console.WriteLine($"Min length: {minimumWireLength}");
                     }
                 }
             }
