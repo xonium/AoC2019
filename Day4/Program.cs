@@ -38,40 +38,31 @@ namespace Day4
                     MatchCollection allMatchResults = null;
                     try
                     {
-                        var doublez = false;
                         Regex regexObj = new Regex(@"([1-9])\1");
+                        var doubleValueFound = false;
                         allMatchResults = regexObj.Matches(valueString);
                         if (allMatchResults.Count > 0)
                         {
-                            // Access individual matches using allMatchResults.Item[]
                             var enumerator = allMatchResults.GetEnumerator();
                             while(enumerator.MoveNext())
                             {
-                                if(doublez)
-                                {
-                                    continue;
-                                }
-
                                 var p = (string)enumerator.Current.ToString();
                                 var indexOfMatch = valueString.IndexOf(p);
 
                                 if(valueString.Length > indexOfMatch + 2) { 
                                     if(valueString[indexOfMatch] != valueString[indexOfMatch + 2])
-                                    {                                            
-                                        doublez = false;
-                                    }
-                                    else
                                     {
-                                        doublez = true;
+                                        doubleValueFound = true;
+                                        break;
                                     }
                                 }
                                 else
                                     {
-                                    doublez = false;
+                                    doubleValueFound = true;
                                 }
                             }
 
-                            if(!doublez)
+                            if(doubleValueFound)
                             {
                                 numberOfPasswords++;
                                 Console.WriteLine(valueString);
