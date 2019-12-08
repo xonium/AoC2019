@@ -9,6 +9,12 @@ namespace Day7
     {
         static void Main(string[] args)
         {
+            //Console.WriteLine($"-- maxResult -- {Part1()}");
+            Part2();
+        }
+
+        private static int Part1()
+        {
             var maxResult = 0;
             for (int param1 = 0; param1 < 5; param1++)
             {
@@ -45,32 +51,105 @@ namespace Day7
                 }
             }
 
-            Console.WriteLine($"-- maxResult -- {maxResult}");
+            return maxResult;
+        }
 
+        private static int Part2()
+        {
+            var maxResult = 0;
+
+            for (int param1 = 5; param1 < 10; param1++)
+            {
+                for (int param2 = 5; param2 < 10; param2++)
+                {
+                    if (param2 == param1)
+                        continue;
+
+                    for (int param3 = 5; param3 < 10; param3++)
+                    {
+                        if (param3 == param2 || param3 == param1)
+                            continue;
+
+                        for (int param4 = 5; param4 < 10; param4++)
+                        {
+                            if (param4 == param3 || param4 == param2 || param4 == param1)
+                                continue;
+
+                            for (int param5 = 5; param5 < 10; param5++)
+                            {
+                                if (param5 == param4 || param5 == param3 || param5 == param2 || param5 == param1)
+                                    continue;
+
+                                var programAmp1 = FileReader.GetValues("./input.txt", ",");
+                                var programAmp2 = FileReader.GetValues("./input.txt", ",");
+                                var programAmp3 = FileReader.GetValues("./input.txt", ",");
+                                var programAmp4 = FileReader.GetValues("./input.txt", ",");
+                                var programAmp5 = FileReader.GetValues("./input.txt", ",");
+
+                                (int, int) result1 = (0, 0);
+                                (int, int) result2 = (0, 0);
+                                (int, int) result3 = (0, 0);
+                                (int, int) result4 = (0, 0);
+                                (int, int) result5 = (0, 0);
+
+                                var running = true;
+                                var setPhaseSetting = true;
+
+                                while (running)
+                                {
+                                    result1 = RunAmplifier(param1, result5.Item1, programAmp1, setPhaseSetting, result1.Item2);
+                                    result2 = RunAmplifier(param2, result1.Item1, programAmp2, setPhaseSetting, result2.Item2);
+                                    result3 = RunAmplifier(param3, result2.Item1, programAmp3, setPhaseSetting, result3.Item2);
+                                    result4 = RunAmplifier(param4, result3.Item1, programAmp4, setPhaseSetting, result4.Item2);
+                                    result5 = RunAmplifier(param5, result4.Item1, programAmp5, setPhaseSetting, result5.Item2);
+
+                                    if (result5.Item1 > maxResult)
+                                    {
+                                        maxResult = result5.Item1;
+                                        Console.WriteLine($"{maxResult} -- Combination: {param1}, {param2}, {param3}, {param4}, {param5} --");
+                                    }
+
+                                    if (result1.Item1 == 0 && result2.Item1 == 0 && result3.Item1 == 0 && result4.Item1 == 0 && result5.Item1 == 0)
+                                    {
+                                        running = false;
+                                    }
+
+                                    setPhaseSetting = false;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            Console.WriteLine($"-- MAXRESULT -- {maxResult}");
+
+
+            return 0;
         }
 
         static int AmplifierCombination(int param1, int param2, int param3, int param4, int param5)
         {
-            var result1 = RunAmplifier(param1, 0);
-            var result2 = RunAmplifier(param2, result1);
-            var result3 = RunAmplifier(param3, result2);
-            var result4 = RunAmplifier(param4, result3);
-            var result5 = RunAmplifier(param5, result4);
+            /*var result1 = RunAmplifier(param1, 0, FileReader.GetValues("./input.txt", ","));
+            var result2 = RunAmplifier(param2, result1, FileReader.GetValues("./input.txt", ","));
+            var result3 = RunAmplifier(param3, result2, FileReader.GetValues("./input.txt", ","));
+            var result4 = RunAmplifier(param4, result3, FileReader.GetValues("./input.txt", ","));
+            var result5 = RunAmplifier(param5, result4, FileReader.GetValues("./input.txt", ","));*/
 
-            return result5;
+            //return result5;
+
+            return 0;
         }
 
-        static int RunAmplifier(int phaseSetting, int outputFromPreviousAmplifier)
+        static (int, int) RunAmplifier(int phaseSetting, int outputFromPreviousAmplifier, List<int> program, bool setPhaseSetting = true, int instructionPointer = 0)
         {
-            return thermalEnvironmentSupervisionTerminal(FileReader.GetValues("./input.txt", ","), phaseSetting, outputFromPreviousAmplifier);
+            return thermalEnvironmentSupervisionTerminal(program, phaseSetting, outputFromPreviousAmplifier, setPhaseSetting, instructionPointer);
         }
 
-        static int thermalEnvironmentSupervisionTerminal(List<int> intValues, int phaseSetting, int outputFromPreviousAmplifier)
+        static (int, int) thermalEnvironmentSupervisionTerminal(List<int> intValues, int phaseSetting, int outputFromPreviousAmplifier, bool setPhaseSetting = true, int instructionPointer = 0)
         {
             var output = 0;
-            int instructionPointer = 0;
             var exit = false;
-            var inputNumber = 0;
 
             while (!exit)
             {
@@ -120,7 +199,7 @@ namespace Day7
                 {
                     if (o.ParameterOne == Instruction.Mode.Position)
                     {
-                        if(inputNumber == 0) { 
+                        if(setPhaseSetting) { 
                             intValues[intValues[instructionPointer + 1]] = phaseSetting;
                         }
                         else
@@ -130,7 +209,7 @@ namespace Day7
                     }
                     else
                     {
-                        if(inputNumber == 0)
+                        if(setPhaseSetting)
                         {
                             intValues[instructionPointer + 1] = phaseSetting;
                         }
@@ -140,7 +219,7 @@ namespace Day7
                         }
                     }
 
-                    inputNumber++;
+                    setPhaseSetting = false;
                     instructionPointer = instructionPointer + 2;
                 }
                 else if (o.Code == 4)
@@ -153,7 +232,10 @@ namespace Day7
                     {
                         output = intValues[instructionPointer + 1];
                     }
+
+                    Console.WriteLine($"-- output -- {output}");                    
                     instructionPointer = instructionPointer + 2;
+                    return (output, instructionPointer);
                 }
                 else if (o.Code == 5)
                 {
@@ -247,7 +329,7 @@ namespace Day7
                 }
             }
 
-            return output;
+            return (output, 0);
         }
     }
 
