@@ -18,6 +18,55 @@ namespace Day8
             var countedValue = CountValuesOfLayer(layerIndex.Item1, image);
 
             Console.WriteLine($"--- Counted Value of layer --- {countedValue}");
+
+            var decodedImage = DecodeImage(image);
+
+            PrintDecodedImage(decodedImage);
+        }
+
+        private static void PrintDecodedImage(List<List<int>> decodedImage)
+        {
+            foreach(var row in decodedImage)
+            {
+                Console.WriteLine(string.Join(string.Empty, row.Select((x) => x == 0 ? " " : "X")));
+            }
+        }
+
+        private static List<List<int>> DecodeImage(List<List<List<int>>> imageLayers)
+        {
+            var decodedImage = new List<List<int>>();
+
+            var rowIndex = 0;
+            foreach (var rows in imageLayers[0])
+            {
+                decodedImage.Add(new List<int>());
+
+                var columnIndex = 0;
+                foreach (var column in rows)
+                {
+                    if(column == 2)
+                    {
+                        foreach(var layer in imageLayers)
+                        {
+                            if(layer[rowIndex][columnIndex] != 2)
+                            {
+                                decodedImage[rowIndex].Add(layer[rowIndex][columnIndex]);
+                                break;
+                            }
+                        }                        
+                    }
+                    else
+                    {
+                        decodedImage[rowIndex].Add(column);
+                    }
+
+                    columnIndex++;
+                }
+
+                rowIndex++;
+            }
+
+            return decodedImage;
         }
 
         private static int CountValuesOfLayer(int layerIndex, List<List<List<int>>> image)
