@@ -11,16 +11,22 @@ namespace Day9
         static void Main(string[] args)
         {
             var longValues = FileReader.GetValuesLong("./input.txt", ",");
+            var longValues2 = FileReader.GetValuesLong("./input.txt", ",");
             var addingMemoryToProgram = Enumerable.Repeat(0, longValues.Count * 10).Select((x) => long.Parse(x.ToString()));
             longValues.AddRange(addingMemoryToProgram);
+
+            longValues2.AddRange(addingMemoryToProgram);
 
             int instructionPointer = 0;
             int relativeBase = 0;
 
-            var m = new ICMachine("input.txt");
-            m.Execute();
-
             var result = thermalEnvironmentSupervisionTerminal(longValues, 1, true, instructionPointer, relativeBase);
+
+            Console.WriteLine($"-- part1: Result from output {result.Item1}--");
+
+            var result2 = thermalEnvironmentSupervisionTerminal(longValues2, 2, true, instructionPointer, relativeBase);
+
+            Console.WriteLine($"-- part2: Result from output {result2.Item1}--");
         }
 
         static void Trace(int instructionPointer, int relativeBase, int instruction, long param1=0, long param2=0)
@@ -108,7 +114,7 @@ namespace Day9
                         intValues[(int)intValues[instructionPointer + 1]] = input;
                     else if(o.ParameterOne == Instruction.Mode.Immediate)
                         intValues[instructionPointer + 1] = input;
-                    else if (o.ParameterThree == Instruction.Mode.Relative)
+                    else if (o.ParameterOne == Instruction.Mode.Relative)
                         intValues[relativeBase + (int)intValues[instructionPointer + 1]] = input;
 
                     instructionPointer = instructionPointer + 2;
@@ -207,7 +213,7 @@ namespace Day9
                     if (param1 < param2)
                     {
                         if (o.ParameterThree == Instruction.Mode.Position)
-                            intValues[(int)intValues[instructionPointer + 3]] = long.Parse(1.ToString());
+                            intValues[(int)intValues[instructionPointer + 3]] = 1;
                         else if(o.ParameterThree == Instruction.Mode.Immediate)
                             intValues[instructionPointer + 3] = 1;
                         else if (o.ParameterThree == Instruction.Mode.Relative)
@@ -220,7 +226,7 @@ namespace Day9
                         else if(o.ParameterThree == Instruction.Mode.Immediate)
                             intValues[instructionPointer + 3] = 0;
                         else if(o.ParameterThree == Instruction.Mode.Relative)
-                            intValues[relativeBase + (int)intValues[instructionPointer + 3]] = 1;
+                            intValues[relativeBase + (int)intValues[instructionPointer + 3]] = 0;
                     }
 
                     instructionPointer = instructionPointer + 4;
