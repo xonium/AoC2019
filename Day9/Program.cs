@@ -1,4 +1,5 @@
-﻿using PuzzleInputParser;
+﻿using Day9.IntCodeMachine;
+using PuzzleInputParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,12 +17,15 @@ namespace Day9
             int instructionPointer = 0;
             int relativeBase = 0;
 
+            var m = new ICMachine("input.txt");
+            m.Execute();
+
             var result = thermalEnvironmentSupervisionTerminal(longValues, 1, true, instructionPointer, relativeBase);
         }
 
         static void Trace(int instructionPointer, int relativeBase, int instruction, long param1=0, long param2=0)
         {
-            Console.WriteLine($"{instructionPointer} {relativeBase} {instruction} {param1} {param2}");
+            Console.WriteLine($"{instructionPointer}:   {instruction} {param1} {param2}");
         }
 
         static (long, int, int) thermalEnvironmentSupervisionTerminal(List<long> intValues, int input, bool trace=false, int instructionPointer=0, int relativeBase=0)
@@ -105,7 +109,7 @@ namespace Day9
                     else if(o.ParameterOne == Instruction.Mode.Immediate)
                         intValues[instructionPointer + 1] = input;
                     else if (o.ParameterThree == Instruction.Mode.Relative)
-                        intValues[relativeBase + (int)intValues[instructionPointer + 3]] = input;
+                        intValues[relativeBase + (int)intValues[instructionPointer + 1]] = input;
 
                     instructionPointer = instructionPointer + 2;
                 }
