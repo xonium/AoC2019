@@ -12,6 +12,12 @@ namespace PuzzleInputParser
             return allText.Split(separator).Select(x => int.Parse(x.Trim())).ToList();
         }
 
+        public static List<long> GetValuesLong(string fileName, string separator)
+        {
+            var allText = File.ReadAllText(fileName);
+            return allText.Split(separator).Select(x => long.Parse(x.Trim())).ToList();
+        }
+
         public static List<int> GetValues(string fileName)
         {
             var allText = File.ReadAllText(fileName);
