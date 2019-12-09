@@ -19,9 +19,9 @@ namespace Day9
             var result = thermalEnvironmentSupervisionTerminal(longValues, 1, true, instructionPointer, relativeBase);
         }
 
-        static void Trace(int instructionPointer, int relativeBase, Instruction o, long param1=0, long param2=0)
+        static void Trace(int instructionPointer, int relativeBase, int instruction, long param1=0, long param2=0)
         {
-            Console.WriteLine($"{instructionPointer} {relativeBase} {o.Code} {param1} {param2}");
+            Console.WriteLine($"{instructionPointer} {relativeBase} {instruction} {param1} {param2}");
         }
 
         static (long, int, int) thermalEnvironmentSupervisionTerminal(List<long> intValues, int input, bool trace=false, int instructionPointer=0, int relativeBase=0)
@@ -36,6 +36,7 @@ namespace Day9
                     break;
                 }
 
+                if (trace) Trace(instructionPointer, relativeBase, (int)intValues[instructionPointer], (int)intValues[instructionPointer+1], (int)intValues[instructionPointer+2]);
                 var o = new Instruction((int)intValues[instructionPointer]);
                 if (o.Code == 1)
                 {
@@ -64,8 +65,6 @@ namespace Day9
                         intValues[instructionPointer + 3] = result;
                     else if (o.ParameterThree == Instruction.Mode.Relative)
                         intValues[relativeBase + (int)intValues[instructionPointer + 3]] = result;
-
-                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     instructionPointer = instructionPointer + 4;
                 }
@@ -97,8 +96,6 @@ namespace Day9
                     else if (o.ParameterThree == Instruction.Mode.Relative)
                         intValues[relativeBase + (int)intValues[instructionPointer + 3]] = result;
 
-                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
-
                     instructionPointer = instructionPointer + 4;
                 }
                 else if (o.Code == 3)
@@ -110,8 +107,6 @@ namespace Day9
                     else if (o.ParameterThree == Instruction.Mode.Relative)
                         intValues[relativeBase + (int)intValues[instructionPointer + 3]] = input;
 
-                    if (trace) Trace(instructionPointer, relativeBase, o);
-
                     instructionPointer = instructionPointer + 2;
                 }
                 else if (o.Code == 4)
@@ -122,8 +117,6 @@ namespace Day9
                         output = intValues[instructionPointer + 1];
                     else if (o.ParameterOne == Instruction.Mode.Relative)
                         output = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
-
-                    if (trace) Trace(instructionPointer, relativeBase, o);
 
                     Console.WriteLine($"output: {output}");
                     instructionPointer = instructionPointer + 2;
@@ -148,8 +141,6 @@ namespace Day9
                         param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
                         param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
-
-                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     if (param1 != 0)
                     {
@@ -180,8 +171,6 @@ namespace Day9
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
                         param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
 
-                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
-
                     if (param1 == 0)
                     {
                         instructionPointer = (int)param2;
@@ -210,8 +199,6 @@ namespace Day9
                         param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
                         param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
-
-                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     if (param1 < param2)
                     {
@@ -254,8 +241,6 @@ namespace Day9
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
                         param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
 
-                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
-
                     if (param1 == param2)
                     {
                         if (o.ParameterThree == Instruction.Mode.Position)
@@ -287,8 +272,6 @@ namespace Day9
                         param1 = intValues[instructionPointer + 1];
                     else if (o.ParameterOne == Instruction.Mode.Relative)
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
-
-                    if (trace) Trace(instructionPointer, relativeBase, o, param1);
 
                     relativeBase = relativeBase + (int)param1;
                     instructionPointer = instructionPointer + 2;
