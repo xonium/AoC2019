@@ -12,14 +12,22 @@ namespace Day9
             var longValues = FileReader.GetValuesLong("./input.txt", ",");
             var addingMemoryToProgram = Enumerable.Repeat(0, longValues.Count * 10).Select((x) => long.Parse(x.ToString()));
             longValues.AddRange(addingMemoryToProgram);
-            Console.WriteLine(thermalEnvironmentSupervisionTerminal(longValues, 1));
-        }
 
-        static long thermalEnvironmentSupervisionTerminal(List<long> intValues, int input)
-        {
             int instructionPointer = 0;
             int relativeBase = 0;
+
+            var result = thermalEnvironmentSupervisionTerminal(longValues, 1, true, instructionPointer, relativeBase);
+        }
+
+        static void Trace(int instructionPointer, int relativeBase, Instruction o, long param1=0, long param2=0)
+        {
+            Console.WriteLine($"{instructionPointer} {relativeBase} {o.Code} {param1} {param2}");
+        }
+
+        static (long, int, int) thermalEnvironmentSupervisionTerminal(List<long> intValues, int input, bool trace=false, int instructionPointer=0, int relativeBase=0)
+        {
             var exit = false;
+            var output = long.Parse("0");
 
             while (!exit)
             {
@@ -42,11 +50,11 @@ namespace Day9
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
                     if (o.ParameterTwo == Instruction.Mode.Position)
-                        param2 = intValues[(int)intValues[instructionPointer + 1]];
+                        param2 = intValues[(int)intValues[instructionPointer + 2]];
                     else if (o.ParameterTwo == Instruction.Mode.Immediate)
-                        param2 = intValues[instructionPointer + 1];
+                        param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
-                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
+                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
 
                     var result = param1 + param2;
 
@@ -56,6 +64,8 @@ namespace Day9
                         intValues[instructionPointer + 3] = result;
                     else if (o.ParameterThree == Instruction.Mode.Relative)
                         intValues[relativeBase + (int)intValues[instructionPointer + 3]] = result;
+
+                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     instructionPointer = instructionPointer + 4;
                 }
@@ -72,11 +82,11 @@ namespace Day9
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
                     if (o.ParameterTwo == Instruction.Mode.Position)
-                        param2 = intValues[(int)intValues[instructionPointer + 1]];
+                        param2 = intValues[(int)intValues[instructionPointer + 2]];
                     else if (o.ParameterTwo == Instruction.Mode.Immediate)
-                        param2 = intValues[instructionPointer + 1];
+                        param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
-                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
+                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
 
                     var result = param1 * param2;
 
@@ -86,6 +96,8 @@ namespace Day9
                         intValues[instructionPointer + 3] = result;
                     else if (o.ParameterThree == Instruction.Mode.Relative)
                         intValues[relativeBase + (int)intValues[instructionPointer + 3]] = result;
+
+                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     instructionPointer = instructionPointer + 4;
                 }
@@ -98,21 +110,26 @@ namespace Day9
                     else if (o.ParameterThree == Instruction.Mode.Relative)
                         intValues[relativeBase + (int)intValues[instructionPointer + 3]] = input;
 
+                    if (trace) Trace(instructionPointer, relativeBase, o);
+
                     instructionPointer = instructionPointer + 2;
                 }
                 else if (o.Code == 4)
                 {
-                    var result = long.Parse("0");
                     if (o.ParameterOne == Instruction.Mode.Position)
-                        result = intValues[(int)intValues[instructionPointer + 1]];
+                        output = intValues[(int)intValues[instructionPointer + 1]];
                     else if(o.ParameterOne == Instruction.Mode.Immediate)
-                        result = intValues[instructionPointer + 1];
+                        output = intValues[instructionPointer + 1];
                     else if (o.ParameterOne == Instruction.Mode.Relative)
-                        result = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
+                        output = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
-                    Console.WriteLine($"output: {result}");
+                    if (trace) Trace(instructionPointer, relativeBase, o);
+
+                    Console.WriteLine($"output: {output}");
                     instructionPointer = instructionPointer + 2;
+                    //return (output, instructionPointer, relativeBase);
                 }
+                // jump-if-true
                 else if (o.Code == 5)
                 {
                     var param1 = long.Parse("0");
@@ -126,11 +143,13 @@ namespace Day9
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
                     if (o.ParameterTwo == Instruction.Mode.Position)
-                        param2 = intValues[(int)intValues[instructionPointer + 1]];
+                        param2 = intValues[(int)intValues[instructionPointer + 2]];
                     else if (o.ParameterTwo == Instruction.Mode.Immediate)
-                        param2 = intValues[instructionPointer + 1];
+                        param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
-                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
+                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
+
+                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     if (param1 != 0)
                     {
@@ -141,10 +160,11 @@ namespace Day9
                         instructionPointer = instructionPointer + 3;
                     }
                 }
+                // jump-if-false
                 else if (o.Code == 6)
                 {
                     var param1 = long.Parse("0");
-                    var param2 = long.Parse("0"); ;
+                    var param2 = long.Parse("0");
 
                     if (o.ParameterOne == Instruction.Mode.Position)
                         param1 = intValues[(int)intValues[instructionPointer + 1]];
@@ -154,11 +174,13 @@ namespace Day9
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
                     if (o.ParameterTwo == Instruction.Mode.Position)
-                        param2 = intValues[(int)intValues[instructionPointer + 1]];
+                        param2 = intValues[(int)intValues[instructionPointer + 2]];
                     else if (o.ParameterTwo == Instruction.Mode.Immediate)
-                        param2 = intValues[instructionPointer + 1];
+                        param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
-                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
+                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
+
+                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     if (param1 == 0)
                     {
@@ -169,6 +191,7 @@ namespace Day9
                         instructionPointer = instructionPointer + 3;
                     }
                 }
+                // less than
                 else if (o.Code == 7)
                 {
                     var param1 = long.Parse("0");
@@ -182,11 +205,13 @@ namespace Day9
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
                     if (o.ParameterTwo == Instruction.Mode.Position)
-                        param2 = intValues[(int)intValues[instructionPointer + 1]];
+                        param2 = intValues[(int)intValues[instructionPointer + 2]];
                     else if (o.ParameterTwo == Instruction.Mode.Immediate)
-                        param2 = intValues[instructionPointer + 1];
+                        param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
-                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
+                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
+
+                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     if (param1 < param2)
                     {
@@ -209,6 +234,7 @@ namespace Day9
 
                     instructionPointer = instructionPointer + 4;
                 }
+                // equals
                 else if (o.Code == 8)
                 {
                     var param1 = long.Parse("0");
@@ -222,11 +248,13 @@ namespace Day9
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
                     if (o.ParameterTwo == Instruction.Mode.Position)
-                        param2 = intValues[(int)intValues[instructionPointer + 1]];
+                        param2 = intValues[(int)intValues[instructionPointer + 2]];
                     else if (o.ParameterTwo == Instruction.Mode.Immediate)
-                        param2 = intValues[instructionPointer + 1];
+                        param2 = intValues[instructionPointer + 2];
                     else if (o.ParameterTwo == Instruction.Mode.Relative)
-                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
+                        param2 = intValues[relativeBase + (int)intValues[instructionPointer + 2]];
+
+                    if (trace) Trace(instructionPointer, relativeBase, o, param1, param2);
 
                     if (param1 == param2)
                     {
@@ -260,6 +288,8 @@ namespace Day9
                     else if (o.ParameterOne == Instruction.Mode.Relative)
                         param1 = intValues[relativeBase + (int)intValues[instructionPointer + 1]];
 
+                    if (trace) Trace(instructionPointer, relativeBase, o, param1);
+
                     relativeBase = relativeBase + (int)param1;
                     instructionPointer = instructionPointer + 2;
                 }
@@ -269,7 +299,7 @@ namespace Day9
                 }
             }
 
-            return intValues[0];
+            return (output, instructionPointer, relativeBase);
         }
 
         internal class Instruction
