@@ -9,21 +9,42 @@ namespace Day10
     {
         static void Main(string[] args)
         {
+            //part 1
             var space = FileReader.GetValuesList("./input.txt", "\r\n");
             
-            PrintSpace(space);
             var asteroidLocations = GetLocationOfAsteroids(space);
 
             CalculateNearbyAsteroidsFromLocations(asteroidLocations, space);
-            var numberOfAsteroidsFound = GetBestLocation(space);
-            Console.WriteLine($"-- Best location spots: {numberOfAsteroidsFound} asteroids --");
+            var bestLocation = GetBestLocation(space);
+
+            Console.WriteLine($"-- Best location spots: {bestLocation.Item1} asteroids at location x: {bestLocation.Item2},y: {bestLocation.Item3}  --");
+
+            //part 2
+            var space2 = FileReader.GetValuesList("./input.txt", "\r\n");
+
+            space2[bestLocation.Item3][bestLocation.Item2] = "X";
+
+            PrintSpace(space2);
+            VaporizeAsteroids(space2, (bestLocation.Item2, bestLocation.Item3));
         }
 
-        private static int GetBestLocation(List<List<string>> space)
+        private static void VaporizeAsteroids(List<List<string>> space, (int, int) baseLocation)
+        {
+            var asteroidLocations = GetLocationOfAsteroids(space);
+            var orderedAngles = CalculateAngles(baseLocation, asteroidLocations).OrderBy(x => x.Item1).ThenBy(x => x.Item2);
+        }
+
+        private static (int, int, int) GetBestLocation(List<List<string>> space)
         {
             var maxResult = 0;
+            var bestLocationX = 0;
+            var bestLocationY = 0;
+            var rowIndex = 0;
+            var colIndex = 0;
+
             foreach(var row in space)
             {
+                colIndex = 0;
                 foreach(var col in row)
                 {
                     if(int.TryParse(col, out int result))
@@ -31,12 +52,18 @@ namespace Day10
                         if(result > maxResult)
                         {
                             maxResult = result;
+                            bestLocationX = colIndex;
+                            bestLocationY = rowIndex;
                         }
                     }
+
+                    colIndex++;
                 }
+
+                rowIndex++;
             }
 
-            return maxResult;
+            return (maxResult, bestLocationX, bestLocationY);
         }
 
         private static List<(int,int)> CalculateAngles((int,int) location, List<(int, int)> asteroidLocations)
@@ -60,7 +87,7 @@ namespace Day10
             return returnAngles.Distinct().ToList();
         }
 
-        static int gcf(int a, int b)
+        private static int gcf(int a, int b)
         {
             while (b != 0)
             {
