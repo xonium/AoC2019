@@ -42,5 +42,18 @@ namespace PuzzleInputParser
 
             return returnList;
         }
+
+        public static List<List<string>> GetValuesList(string fileName, string listseparator)
+        {
+            var allText = File.ReadAllText(fileName);
+            var returnList = new List<List<string>>();
+            var lists = allText.Split(listseparator);
+            foreach (var list in lists)
+            {
+                returnList.Add(list.Select(x => x.ToString()).ToList());
+            }
+
+            return returnList;
+        }
     }
 }
