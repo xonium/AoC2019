@@ -15,102 +15,71 @@ namespace Day10
             var asteroidLocations = GetLocationOfAsteroids(space);
 
             CalculateNearbyAsteroidsFromLocations(asteroidLocations, space);
+            var numberOfAsteroidsFound = GetBestLocation(space);
+            Console.WriteLine($"-- Best location spots: {numberOfAsteroidsFound} asteroids --");
+        }
+
+        private static int GetBestLocation(List<List<string>> space)
+        {
+            var maxResult = 0;
+            foreach(var row in space)
+            {
+                foreach(var col in row)
+                {
+                    if(int.TryParse(col, out int result))
+                    {
+                        if(result > maxResult)
+                        {
+                            maxResult = result;
+                        }
+                    }
+                }
+            }
+
+            return maxResult;
+        }
+
+        private static List<(int,int)> CalculateAngles((int,int) location, List<(int, int)> asteroidLocations)
+        {
+            var angles = asteroidLocations
+                .Where(x => x != location)
+                .Select(x => (x.Item1 - location.Item1, x.Item2 - location.Item2))
+                .ToList();
+
+            var returnAngles = new List<(int, int)>();
+
+            foreach(var angle in angles)
+            {
+                var commonDivisor = gcf(angle.Item1, angle.Item2);
+                returnAngles.Add(
+                    (commonDivisor > 0 ? angle.Item1 / commonDivisor : -(angle.Item1 / commonDivisor),
+                     commonDivisor > 0 ? angle.Item2 / commonDivisor : -(angle.Item2 / commonDivisor))
+                    );
+            }
+
+            return returnAngles.Distinct().ToList();
+        }
+
+        static int gcf(int a, int b)
+        {
+            while (b != 0)
+            {
+                int temp = b;
+                b = a % b;
+                a = temp;
+            }
+            return a;
         }
 
         private static void CalculateNearbyAsteroidsFromLocations(List<(int, int)> asteroidLocations, List<List<string>> space)
         {
             foreach(var location in asteroidLocations)
             {
-                var foundAsteroids = ShootAsteroidDetectionRayVersion2(location, asteroidLocations, space.Count);
-                space[location.Item2][location.Item1] = foundAsteroids.ToString();
+                var foundAsteroids = CalculateAngles(location, asteroidLocations);
+                space[location.Item2][location.Item1] = foundAsteroids.Count().ToString();
                 
                 PrintSpace(space);
             }
-        }
-
-        private static int ShootAsteroidDetectionRayVersion2((int, int) location, List<(int, int)> asteroidLocations, int maxSizeOfSpace)
-        {
-            var numbersFound = 1;
-            var angles = new List<(int, int)>
-            {
-                (1, 0),
-                (1, 1),
-                (0, 1),
-                (2, 1),
-                (1, 2),
-                (3, 1),
-                (3, 2),
-                (2, 3),
-                (1, 3),
-                (4, 1),
-                (4, 3),
-                (3, 4),
-                (1, 4),
-
-
-                (-1, 0),
-                (-1, 1),
-                (-0, 1),
-                (-2, 1),
-                (-1, 2),
-                (-3, 1),
-                (-3, 2),
-                (-2, 3),
-                (-1, 3),
-                (-4, 1),
-                (-4, 3),
-                (-3, 4),
-                (-1, 4),
-
-                (1, -0),
-                (1, -1),
-                (0, -1),
-                (2, -1),
-                (1, -2),
-                (3, -1),
-                (3, -2),
-                (2, -3),
-                (1, -3),
-                (4, -1),
-                (4, -3),
-                (3, -4),
-                (1, -4),
-
-                (-1, -0),
-                (-1, -1),
-                (-0, -1),
-                (-2, -1),
-                (-1, -2),
-                (-3, -1),
-                (-3, -2),
-                (-2, -3),
-                (-1, -3),
-                (-4, -1),
-                (-4, -3),
-                (-3, -4),
-                (-1, -4),
-            };
-
-            foreach(var angle in angles) { 
-                var shotRay = 1;
-                var currentRayPosition = location;
-
-                while (shotRay < maxSizeOfSpace)
-                {
-                    currentRayPosition.Item1 += angle.Item1 * shotRay;
-                    currentRayPosition.Item2 += angle.Item2 * shotRay;
-
-                    if (asteroidLocations.Contains(currentRayPosition))
-                    {
-                        numbersFound++;
-                        break;
-                    }
-
-                    shotRay++;
-                }
-            }
-
-            return numbersFound;
         }
 
         private static List<(int,int)> GetLocationOfAsteroids(List<List<string>> space)
