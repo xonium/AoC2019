@@ -22,18 +22,21 @@ namespace Day11
 
             var output = 0f;
             var instructionPointer = 0;
+            var relativeBase = 0;
             var robotCurrentPosition = (0, 0);
             var robotCurrentRotation = Direction.UP;
             var currentlySees = 0;
             var paintToggle = true;
             var paintDictionary = new Dictionary<(int, int), int>();
+
             while (output != -1)
             {
                 currentlySees = paintDictionary.GetValueOrDefault(robotCurrentPosition);
 
-                var result = IntCode.ThermalEnvironmentSupervisionTerminal(longValues, currentlySees, trace: false, instructionPointer);
+                var result = IntCode.ThermalEnvironmentSupervisionTerminal(longValues, currentlySees, trace: false, instructionPointer, relativeBase);
                 if (paintToggle) { 
                     output = result.Item1;
+
                     //paint white
                     if (output == 1) {
                         if (paintDictionary.ContainsKey(robotCurrentPosition))
@@ -42,15 +45,17 @@ namespace Day11
                             paintDictionary.Add(robotCurrentPosition, 1);
                     }
                     //paint black
-                    else
+                    else if (output == 0)
                     {
                         if (paintDictionary.ContainsKey(robotCurrentPosition))
                             paintDictionary[robotCurrentPosition] = 0;
                         else
                             paintDictionary.Add(robotCurrentPosition, 0);
                     }
-
-                    instructionPointer = result.Item2;
+                    else
+                    {
+                        Console.WriteLine("SOMETHING IS WROOOONG");
+                    }
                 }
                 else
                 {
@@ -78,7 +83,7 @@ namespace Day11
                         }
                     }
                     //left 90 degrees
-                    else
+                    else if (result.Item1 == 0)
                     {
                         switch (robotCurrentRotation)
                         {
@@ -102,6 +107,8 @@ namespace Day11
                     }
                 }
 
+                instructionPointer = result.Item2;
+                relativeBase = result.Item3;
                 paintToggle = !paintToggle;
             }
 
