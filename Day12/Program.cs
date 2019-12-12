@@ -43,9 +43,155 @@ namespace Day12
                 new Moon(3, 5, -1)
             };
 
-            var steps = NumberOfStepsBeforeInitialState(moons2);
+            //The axes(x, y, z) are totally independent.So it suffices to find the period for each axis separately.
+            //Then the answer is the lcm of these.
+            //Each axis will repeat "relatively quickly"(fast enough to brute force)
+            //Since each state has a unique parent, the first repeat must be a repeat of state 0.
+            var xAxisRepeat = WhenWillXAxisRepeat(moons1);
 
-            Console.WriteLine($"Part 2: ----- {steps} ------");
+            moons1 = new List<Moon>()
+            {
+                new Moon(-1, 0, 2),
+                new Moon(2, -10, -7),
+                new Moon(4, -8, 8),
+                new Moon(3, 5, -1)
+            };
+
+            var yAxisRepeat = WhenWillYAxisRepeat(moons1);
+
+            moons1 = new List<Moon>()
+            {
+                new Moon(-1, 0, 2),
+                new Moon(2, -10, -7),
+                new Moon(4, -8, 8),
+                new Moon(3, 5, -1)
+            };
+
+            var zAxisRepeat = WhenWillZAxisRepeat(moons1);
+
+            Console.WriteLine($"Steps x: {xAxisRepeat}, y: {yAxisRepeat}, z: {zAxisRepeat}");
+            var result = FindLCM(xAxisRepeat, yAxisRepeat, zAxisRepeat);
+
+            Console.WriteLine($"Part 2: ----- {result} ------");
+        }
+
+        private static double FindLCM(long xRepeats, long yRepeats, long zRepeats)
+        {
+            var factorsX = GetFactors((int)xRepeats);
+            var factorsY = GetFactors((int)yRepeats);
+            var factorsZ = GetFactors((int)zRepeats);
+
+            var maxX = factorsX.Max();
+            var maxY = factorsY.Max();
+            var maxZ = factorsZ.Max();
+
+            var countX = factorsX.Where(x => x == maxX).Count();
+            var countY = factorsY.Where(x => x == maxY).Count();
+            var countZ = factorsZ.Where(x => x == maxZ).Count();
+
+            var result = Math.Pow(maxX, countX) * Math.Pow(maxY, countY) * Math.Pow(maxZ, countZ);
+
+            return result;
+        }
+
+        public static IEnumerable<int> Primes()
+        {
+            var ints = Enumerable.Range(2, Int32.MaxValue - 1);
+            return ints.Where(x => !ints
+                                    .TakeWhile(y => y < x)
+                                    .Any(y => x % y == 0));
+        }
+
+        public static IEnumerable<int> GetFactors(int input)
+        {
+            int first = Primes()
+                .TakeWhile(x => x <= Math.Sqrt(input))
+                .FirstOrDefault(x => input % x == 0);
+            return first == 0
+                    ? new[] { input }
+                    : new[] { first }.Concat(GetFactors(input / first));
+        }
+
+        private static long WhenWillXAxisRepeat(List<Moon> moons)
+        {
+            long steps = 0;
+            var initalStateFound = false;
+            while (!initalStateFound)
+            {
+                ApplyGravity(moons);
+                ApplyVelocity(moons);
+
+                foreach (var moon in moons)
+                {
+                    if(moon.IsAtInitialStateX()) { 
+                        initalStateFound = true;
+                    }
+                    else { 
+                        initalStateFound = false;
+                        break;
+                    }
+                }
+
+                steps++;
+            }
+
+            return steps;
+        }
+
+        private static long WhenWillYAxisRepeat(List<Moon> moons)
+        {
+            long steps = 0;
+            var initalStateFound = false;
+            while (!initalStateFound)
+            {
+                ApplyGravity(moons);
+                ApplyVelocity(moons);
+
+                foreach (var moon in moons)
+                {
+                    if (moon.IsAtInitialStateY())
+                    {
+                        initalStateFound = true;
+                    }
+                    else
+                    {
+                        initalStateFound = false;
+                        break;
+                    }
+                }
+
+                steps++;
+            }
+
+            return steps;
+        }
+
+        private static long WhenWillZAxisRepeat(List<Moon> moons)
+        {
+            long steps = 0;
+            var initalStateFound = false;
+            while (!initalStateFound)
+            {
+                ApplyGravity(moons);
+                ApplyVelocity(moons);
+
+                foreach (var moon in moons)
+                {
+                    if (moon.IsAtInitialStateZ())
+                    {
+                        initalStateFound = true;
+                    }
+                    else
+                    {
+                        initalStateFound = false;
+                        break;
+                    }
+                }
+
+                steps++;
+            }
+
+            return steps;
         }
 
         private static long NumberOfStepsBeforeInitialState(List<Moon> moons)
@@ -63,7 +209,7 @@ namespace Day12
                 {
                     if(moon.IsAtInitialState()) { 
                         initalStateFound = true;
-                        PrintMoons(moons, (int)steps);
+                        PrintMoons(moons, steps);
                     }
                     else { 
                         initalStateFound = false;
@@ -129,7 +275,7 @@ namespace Day12
             }
         }
 
-        private static void PrintMoons(List<Moon> moons, int i)
+        private static void PrintMoons(List<Moon> moons, long i)
         {
             Console.WriteLine($"After {i} steps:");
             foreach (var moon in moons)
@@ -166,8 +312,41 @@ namespace Day12
             if( Position.X == InitialPosition.X && 
                 Position.Y == InitialPosition.Y &&
                 Position.Z == InitialPosition.Z &&
-                Velocity.Z == InitialVelocity.Z &&
+                Velocity.X == InitialVelocity.Z &&
                 Velocity.Y == InitialVelocity.Y &&
+                Velocity.Z == InitialVelocity.Z)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool IsAtInitialStateX()
+        {
+            if (Position.X == InitialPosition.X &&
+                Velocity.X == InitialVelocity.X)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool IsAtInitialStateY()
+        {
+            if (Position.Y == InitialPosition.Y &&
+                Velocity.Y == InitialVelocity.Y)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public bool IsAtInitialStateZ()
+        {
+            if (Position.Z == InitialPosition.Z &&
                 Velocity.Z == InitialVelocity.Z)
             {
                 return true;
