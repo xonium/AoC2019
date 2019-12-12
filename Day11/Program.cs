@@ -18,46 +18,91 @@ namespace Day11
             var addingMemoryToProgram = Enumerable.Repeat(0, longValues.Count * 50).Select((x) => long.Parse(x.ToString()));
             longValues.AddRange(addingMemoryToProgram);
 
-            var robotoverview = FileReader.GetValuesList("./robotoverview.txt", "\r\n");
+            //part 1
+            var startColor = 0;
+            //var result = EmergencyHullPaintingRobot(longValues, startColor);
 
+            //part 2
+            startColor = 1;
+            var result2 = EmergencyHullPaintingRobot(longValues, startColor);
+
+            var columns = result2.Keys.Max(x => x.Item1);
+            var rows = result2.Keys.Max(x => x.Item2);
+
+            var grid = new List<List<string>>();
+            for (int i = 0; i <= rows; i++)
+            {
+                grid.Add(new List<string>());
+                for (int p = 0; p <= columns; p++)
+                {
+                    grid[i].Add(".");
+                }
+            }
+
+            Paint(grid, result2);
+        }
+
+        static void Paint(List<List<string>> robotoverview, Dictionary<(int,int), int> paint)
+        {
+            foreach(var paintrow in paint)
+            {
+                var color = paintrow.Value == 1 ? "#" : ".";
+                robotoverview[paintrow.Key.Item2][paintrow.Key.Item1] = color;
+            }
+
+            foreach(var row in robotoverview)
+            {
+                Console.WriteLine(string.Join("", row));
+            }
+        }
+
+        static Dictionary<(int, int), int> EmergencyHullPaintingRobot(List<long> program, int startColor)
+        {
             var output = 0f;
             var instructionPointer = 0;
+            var relativeBase = 0;
             var robotCurrentPosition = (0, 0);
             var robotCurrentRotation = Direction.UP;
-            var currentlySees = 0;
+            var currentlySees = startColor;
             var paintToggle = true;
             var paintDictionary = new Dictionary<(int, int), int>();
+
             while (output != -1)
             {
-                currentlySees = paintDictionary.GetValueOrDefault(robotCurrentPosition);
+                currentlySees = instructionPointer != 0 ? paintDictionary.GetValueOrDefault(robotCurrentPosition) : startColor;
 
-                var result = IntCode.ThermalEnvironmentSupervisionTerminal(longValues, currentlySees, trace: false, instructionPointer);
-                if (paintToggle) { 
+                var result = IntCode.ThermalEnvironmentSupervisionTerminal(program, currentlySees, trace: false, instructionPointer, relativeBase);
+                if (paintToggle)
+                {
                     output = result.Item1;
+
                     //paint white
-                    if (output == 1) {
+                    if (output == 1)
+                    {
                         if (paintDictionary.ContainsKey(robotCurrentPosition))
                             paintDictionary[robotCurrentPosition] = 1;
                         else
                             paintDictionary.Add(robotCurrentPosition, 1);
                     }
                     //paint black
-                    else
+                    else if (output == 0)
                     {
                         if (paintDictionary.ContainsKey(robotCurrentPosition))
                             paintDictionary[robotCurrentPosition] = 0;
                         else
                             paintDictionary.Add(robotCurrentPosition, 0);
                     }
-
-                    instructionPointer = result.Item2;
+                    else
+                    {
+                        Console.WriteLine("SOMETHING IS WROOOONG");
+                    }
                 }
                 else
                 {
                     //right 90 degrees
-                    if (result.Item1 == 1) 
+                    if (result.Item1 == 1)
                     {
-                        switch(robotCurrentRotation)
+                        switch (robotCurrentRotation)
                         {
                             case Direction.UP:
                                 robotCurrentRotation = Direction.RIGHT;
@@ -78,7 +123,7 @@ namespace Day11
                         }
                     }
                     //left 90 degrees
-                    else
+                    else if (result.Item1 == 0)
                     {
                         switch (robotCurrentRotation)
                         {
@@ -102,18 +147,13 @@ namespace Day11
                     }
                 }
 
+                instructionPointer = result.Item2;
+                relativeBase = result.Item3;
                 paintToggle = !paintToggle;
             }
 
             Console.WriteLine($"DOOONE panels painted: {paintDictionary.Count()}");
-        }
-
-        static void Paint(List<List<string>> robotoverview, (int,int) robotCurrentPosition)
-        {
-            foreach(var row in robotoverview)
-            {
-                Console.WriteLine(string.Join("", row));
-            }
+            return paintDictionary;
         }
     }
 }
