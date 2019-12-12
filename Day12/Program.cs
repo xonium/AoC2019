@@ -29,10 +29,10 @@ namespace Day12
 
             var moons2 = new List<Moon>()
             {
-                new Moon(-8, -10, 0),
-                new Moon(5, 5, 10),
-                new Moon(2, -7, 3),
-                new Moon(9, -8, -3)
+                new Moon(14, 9, 14),
+                new Moon(9, 11, 6),
+                new Moon(-6, 14, -4),
+                new Moon(4, -4, -3)
             };
 
             var moons1 = new List<Moon>()
@@ -43,28 +43,24 @@ namespace Day12
                 new Moon(3, 5, -1)
             };
 
-            //The axes(x, y, z) are totally independent.So it suffices to find the period for each axis separately.
-            //Then the answer is the lcm of these.
-            //Each axis will repeat "relatively quickly"(fast enough to brute force)
-            //Since each state has a unique parent, the first repeat must be a repeat of state 0.
-            var xAxisRepeat = WhenWillXAxisRepeat(moons1);
+            var xAxisRepeat = WhenWillXAxisRepeat(moons2);
 
             moons1 = new List<Moon>()
             {
-                new Moon(-1, 0, 2),
-                new Moon(2, -10, -7),
-                new Moon(4, -8, 8),
-                new Moon(3, 5, -1)
+                new Moon(14, 9, 14),
+                new Moon(9, 11, 6),
+                new Moon(-6, 14, -4),
+                new Moon(4, -4, -3)
             };
 
             var yAxisRepeat = WhenWillYAxisRepeat(moons1);
 
             moons1 = new List<Moon>()
             {
-                new Moon(-1, 0, 2),
-                new Moon(2, -10, -7),
-                new Moon(4, -8, 8),
-                new Moon(3, 5, -1)
+                new Moon(14, 9, 14),
+                new Moon(9, 11, 6),
+                new Moon(-6, 14, -4),
+                new Moon(4, -4, -3)
             };
 
             var zAxisRepeat = WhenWillZAxisRepeat(moons1);
@@ -77,21 +73,59 @@ namespace Day12
 
         private static double FindLCM(long xRepeats, long yRepeats, long zRepeats)
         {
-            var factorsX = GetFactors((int)xRepeats);
-            var factorsY = GetFactors((int)yRepeats);
-            var factorsZ = GetFactors((int)zRepeats);
+            var factorsX = GetFactors((int)xRepeats).ToList();
+            var factorsY = GetFactors((int)yRepeats).ToList();
+            var factorsZ = GetFactors((int)zRepeats).ToList();
 
-            var maxX = factorsX.Max();
-            var maxY = factorsY.Max();
-            var maxZ = factorsZ.Max();
+            var maxPowerX = factorsX.GroupBy(x => x).OrderByDescending(x => x.Count());
+            var maxPowerY = factorsY.GroupBy(x => x).OrderByDescending(x => x.Count());
+            var maxPowerZ = factorsZ.GroupBy(x => x).OrderByDescending(x => x.Count());
 
-            var countX = factorsX.Where(x => x == maxX).Count();
-            var countY = factorsY.Where(x => x == maxY).Count();
-            var countZ = factorsZ.Where(x => x == maxZ).Count();
+            var returnList = new List<double>();
+            var allFactors = new List<int>();
+            allFactors.AddRange(factorsX);
+            allFactors.AddRange(factorsY);
+            allFactors.AddRange(factorsZ);
 
-            var result = Math.Pow(maxX, countX) * Math.Pow(maxY, countY) * Math.Pow(maxZ, countZ);
+            foreach (var factor in allFactors.Distinct())
+            {
+                var max = 0d;
+                var maxPowX = maxPowerX.FirstOrDefault(x => x.Key == factor);
+                if (maxPowX != null)
+                {
+                    var a = Math.Pow(maxPowX.Key, maxPowX.Count());
+                    if (a > max)
+                    {
+                        max = a;
+                    }
+                }
 
-            return result;
+                var maxPowY = maxPowerY.FirstOrDefault(x => x.Key == factor);
+                if (maxPowY != null)
+                {
+                    var a = Math.Pow(maxPowY.Key, maxPowY.Count());
+                    if (a > max)
+                    {
+                        max = a;
+                    }
+                }
+
+                var maxPowZ = maxPowerZ.FirstOrDefault(x => x.Key == factor);
+                if (maxPowZ != null)
+                {
+                    var a = Math.Pow(maxPowZ.Key, maxPowZ.Count());
+                    if (a > max)
+                    {
+                        max = a;
+                    }
+                }
+
+                returnList.Add(max);
+            }
+
+            var answer = returnList.Aggregate((a, x) => a * x);
+
+            return answer;
         }
 
         public static IEnumerable<int> Primes()
