@@ -1,6 +1,7 @@
 ﻿using PuzzleInputParser;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -79,8 +80,17 @@ namespace Day13
             bool startPositionYSeen = false;
             long score = 0;
 
+            // state
             var previousGameState = new Dictionary<(long, long), long>();
             var gameState = new Dictionary<(long, long), long>();
+
+            // time handling
+            const long constantFPS = 5;
+            const long constantMSPF = 1000 / constantFPS;
+            long deltaTime = 0;
+            long lastFrameTime = 0;
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
 
             while (output != 99)
             {
@@ -88,7 +98,7 @@ namespace Day13
                 while (Console.KeyAvailable)
                 {
                     ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-                    if(keyInfo.Key == ConsoleKey.LeftArrow)
+                    if (keyInfo.Key == ConsoleKey.LeftArrow)
                     {
                         input = -1;
                     }
@@ -98,9 +108,14 @@ namespace Day13
                     }
                 }
 
+                deltaTime = constantMSPF - lastFrameTime;
+                if(gameState.Count == 1008) //if gamefield havent been loaded fully. just run
+                if (deltaTime > 0)
+                    Thread.Sleep((int)deltaTime);
 
                 //run logic
-                while(runningLogicLoop)
+                runningLogicLoop = true;
+                while (runningLogicLoop)
                 {
                     var result = thermalEnvironmentSupervisionTerminal(longValues, input, false, instructionPointer, relativeBase);
                     output = result.Item1;
@@ -159,7 +174,6 @@ namespace Day13
                     }
                 }
 
-
                 //render
                 foreach(var gameAreaItem in gameState)
                 {
@@ -195,11 +209,11 @@ namespace Day13
                     Console.Write(item);
                 }
 
-                Thread.Sleep(5);
-
-                runningLogicLoop = true;
+                lastFrameTime = stopWatch.ElapsedMilliseconds;
+                stopWatch.Restart();
             }
 
+            stopWatch.Stop();
             Console.WriteLine($"--- RESULT {score} ---");
         }
         static void AddToGameArea(long tileType, long positionX, long positionY, Dictionary<(long, long), long> gameArea)
