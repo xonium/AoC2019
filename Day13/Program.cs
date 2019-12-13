@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 
 namespace Day13
 {
@@ -155,11 +156,12 @@ namespace Day13
                             outputType = 0;
                             break;
                     }
+                    Thread.Sleep(5);
                 }
 
 
                 //render
-                Console.Clear();
+                Console.SetCursorPosition(0, 0);
 
                 var maxX = gameArea.Keys.Max(x => x.Item1);
                 var maxY = gameArea.Keys.Max(y => y.Item2);
