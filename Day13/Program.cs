@@ -1,6 +1,7 @@
 ﻿using PuzzleInputParser;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -79,7 +80,17 @@ namespace Day13
             bool startPositionYSeen = false;
             long score = 0;
 
-            var gameArea = new Dictionary<(long, long), long>();
+            // state
+            var previousGameState = new Dictionary<(long, long), long>();
+            var gameState = new Dictionary<(long, long), long>();
+
+            // time handling
+            const long constantFPS = 5;
+            const long constantMSPF = 1000 / constantFPS;
+            long deltaTime = 0;
+            long lastFrameTime = 0;
+            Stopwatch stopWatch = new Stopwatch();
+            stopWatch.Start();
 
             while (output != 99)
             {
@@ -87,7 +98,7 @@ namespace Day13
                 while (Console.KeyAvailable)
                 {
                     ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-                    if(keyInfo.Key == ConsoleKey.LeftArrow)
+                    if (keyInfo.Key == ConsoleKey.LeftArrow)
                     {
                         input = -1;
                     }
@@ -97,9 +108,14 @@ namespace Day13
                     }
                 }
 
+                deltaTime = constantMSPF - lastFrameTime;
+                if(gameState.Count == 1008) //if gamefield havent been loaded fully. just run
+                if (deltaTime > 0)
+                    Thread.Sleep((int)deltaTime);
 
                 //run logic
-                while(runningLogicLoop)
+                runningLogicLoop = true;
+                while (runningLogicLoop)
                 {
                     var result = thermalEnvironmentSupervisionTerminal(longValues, input, false, instructionPointer, relativeBase);
                     output = result.Item1;
@@ -145,7 +161,7 @@ namespace Day13
                             if (!scoreOutput)
                             {
                                 tileType = output;
-                                AddToGameArea(tileType, positionX, positionY, gameArea);
+                                AddToGameArea(tileType, positionX, positionY, gameState);
                             }
                             else
                             {
@@ -156,33 +172,23 @@ namespace Day13
                             outputType = 0;
                             break;
                     }
-                    Thread.Sleep(5);
                 }
-
 
                 //render
-                Console.SetCursorPosition(0, 0);
-
-                var maxX = gameArea.Keys.Max(x => x.Item1);
-                var maxY = gameArea.Keys.Max(y => y.Item2);
-
-                var renderArea = new List<List<string>>();
-                for (int y = 0; y <= maxY; y++)
+                foreach(var gameAreaItem in gameState)
                 {
-                    renderArea.Add(new List<string>());
-
-                    for (int x = 0; x <= maxX; x++)
+                    if(previousGameState.ContainsKey(gameAreaItem.Key))
                     {
-                        renderArea[y].Add(" ");
+                        if (previousGameState[gameAreaItem.Key] == gameAreaItem.Value)
+                            continue;
                     }
-                }
+                    
+                    previousGameState[gameAreaItem.Key] = gameAreaItem.Value;
 
-                foreach (var gameAreaItem in gameArea)
-                {
                     var item = " ";
                     switch (gameAreaItem.Value)
                     {
-                        case 0: //empty tile
+                        case 0: //empty tile                            
                             item = " ";
                             break;
                         case 1: //wall tile
@@ -199,18 +205,16 @@ namespace Day13
                             break;
                     }
 
-                    renderArea[(int)gameAreaItem.Key.Item2][(int)gameAreaItem.Key.Item1] = item;
+                    Console.SetCursorPosition((int)gameAreaItem.Key.Item1, (int)gameAreaItem.Key.Item2);
+                    Console.Write(item);
                 }
 
-                foreach (var renderAreaRow in renderArea)
-                {
-                    Console.WriteLine(string.Join(" ", renderAreaRow));
-                }
-
-                runningLogicLoop = true;
+                lastFrameTime = stopWatch.ElapsedMilliseconds;
+                stopWatch.Restart();
             }
 
-
+            stopWatch.Stop();
+            Console.WriteLine($"--- RESULT {score} ---");
         }
         static void AddToGameArea(long tileType, long positionX, long positionY, Dictionary<(long, long), long> gameArea)
         {
