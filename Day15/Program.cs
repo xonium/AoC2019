@@ -536,7 +536,7 @@ namespace Day15
                         case 2: //Oxygen tile
                             item = "O";
                             break;
-                        case 9:
+                        case 9: 
                             item = "P";
                             break;
                         case 666:
