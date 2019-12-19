@@ -48,6 +48,8 @@ namespace Day18
             int pathLength = 0;
             var collectedKeys = new List<char>();
             var collecedAllKeys = false;
+            int pathIndex = 0;
+            var path = new List<Node>();
 
             // state
             var previousGameState = new Dictionary<(int, int), string>();
@@ -63,27 +65,34 @@ namespace Day18
             while (!collecedAllKeys)
             {
                 var allKeys = gameState.Where(x => char.IsLower(char.Parse(x.Value))).ToList();
-                var path = CalculatePathToNearestKey(allKeys, collectedKeys, gameState, currentPosition);
 
                 //recieve input
                 var moveVector = (0, 0);
-                if(path.Count >= 2) { 
-                    var moveToPosition = path.Skip(1).First();
+
+                if (pathIndex < path.Count) { 
+                    var moveToPosition = path[pathIndex];
                     moveVector = ((int)moveToPosition.Point.X - currentPosition.Item1, (int)moveToPosition.Point.Y - currentPosition.Item2);
                     currentPosition = (currentPosition.Item1 + moveVector.Item1, currentPosition.Item2 + moveVector.Item2);
                     numberOfSteps++;
+                    pathIndex++;
                 }
-                else if(allKeys.Count == 0)
+
+                //logic
+                if (path.Count == 0)
+                {
+                    path = CalculatePathToNearestKey(allKeys, collectedKeys, gameState, currentPosition);
+                    pathIndex++;
+                }
+                if (allKeys.Count == 0)
                 {
                     collecedAllKeys = true;
                 }
-
-
-                //logic
-                if(char.IsLower(char.Parse(gameState[currentPosition]))) //standing on a key?
+                if (char.IsLower(char.Parse(gameState[currentPosition]))) //standing on a key?
                 {
                     collectedKeys.Add(char.Parse(gameState[currentPosition]));
                     gameState[currentPosition] = ".";
+                    path = CalculatePathToNearestKey(allKeys, collectedKeys, gameState, currentPosition);
+                    pathIndex = 1;
                 }
                 else if(char.IsUpper(char.Parse(gameState[currentPosition]))) //open door
                 {
@@ -122,6 +131,7 @@ namespace Day18
             var closestKey = int.MaxValue;
             var keyToMoveTo = string.Empty;
             var path = new List<Node>();
+            
             foreach (var key in allKeys)
             {
                 var map = GenerateMapFromGameState(gameState, currentPosition, collectedKeys);
